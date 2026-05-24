@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VoteRouteImport } from './routes/vote'
+import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ElectionsRouteImport } from './routes/elections'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -19,6 +20,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const VoteRoute = VoteRouteImport.update({
   id: '/vote',
   path: '/vote',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -53,6 +59,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/elections': typeof ElectionsRoute
   '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/vote': typeof VoteRoute
 }
 export interface FileRoutesByTo {
@@ -61,6 +68,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/elections': typeof ElectionsRoute
   '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/vote': typeof VoteRoute
 }
 export interface FileRoutesById {
@@ -70,13 +78,28 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/elections': typeof ElectionsRoute
   '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/vote': typeof VoteRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/dashboard' | '/elections' | '/login' | '/vote'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/dashboard'
+    | '/elections'
+    | '/login'
+    | '/register'
+    | '/vote'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/dashboard' | '/elections' | '/login' | '/vote'
+  to:
+    | '/'
+    | '/admin'
+    | '/dashboard'
+    | '/elections'
+    | '/login'
+    | '/register'
+    | '/vote'
   id:
     | '__root__'
     | '/'
@@ -84,6 +107,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/elections'
     | '/login'
+    | '/register'
     | '/vote'
   fileRoutesById: FileRoutesById
 }
@@ -93,6 +117,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   ElectionsRoute: typeof ElectionsRoute
   LoginRoute: typeof LoginRoute
+  RegisterRoute: typeof RegisterRoute
   VoteRoute: typeof VoteRoute
 }
 
@@ -103,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/vote'
       fullPath: '/vote'
       preLoaderRoute: typeof VoteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -149,6 +181,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   ElectionsRoute: ElectionsRoute,
   LoginRoute: LoginRoute,
+  RegisterRoute: RegisterRoute,
   VoteRoute: VoteRoute,
 }
 export const routeTree = rootRouteImport
