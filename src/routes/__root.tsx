@@ -13,6 +13,7 @@ import { AppProvider } from "@/context/AppContext";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Toaster } from "@/components/ui/sonner";
+import lcuCrest from "@/assets/lcu-crest.png";
 
 function NotFoundComponent() {
   return (
@@ -118,12 +119,28 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AppProvider>
-        <div className="flex min-h-screen flex-col">
+        <div
+          className="relative flex min-h-screen flex-col bg-background"
+          style={{
+            backgroundImage: `url(${lcuCrest})`,
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "center center",
+            backgroundAttachment: "fixed",
+            backgroundSize: "min(640px, 70vw)",
+          }}
+        >
+          <div
+            aria-hidden
+            className="pointer-events-none fixed inset-0 -z-0"
+            style={{ background: "color-mix(in oklab, var(--background) 88%, transparent)" }}
+          />
+          <div className="relative z-10 flex min-h-screen flex-col">
           <Header />
           <main className="flex-1">
             <Outlet />
           </main>
           <Footer />
+          </div>
         </div>
         <Toaster richColors position="top-right" />
       </AppProvider>

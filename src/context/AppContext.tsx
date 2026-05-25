@@ -167,13 +167,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!currentUser) return { ok: false, error: "Please log in to vote." };
       if (state.electionStatus !== "Open") return { ok: false, error: `Voting is currently ${state.electionStatus.toLowerCase()}.` };
       if (currentUser.votedFor[position]) return { ok: false, error: "You have already voted for this position." };
-      setState((s) => ({
-        ...s,
-        users: s.users.map((u) =>
-          u.id === currentUser.id ? { ...u, votedFor: { ...u.votedFor, [position]: candidateId } } : u
-        ),
-        candidates: s.candidates.map((c) => (c.id === candidateId ? { ...c, votes: c.votes + 1 } : c)),
-      }));
+      let applied = true;
+      setState((s) => {
+        if (s.electionStatus !== "Open") { applied = false; return s; }
+        const u = s.users.find((x) => x.id === currentUser.id);
+        // Re-check against the freshest state to block race conditions / rapid clicks
+        if (!u || u.votedFor[position]) { applied = false; return s; }
+        return {
+          ...s,
+          users: s.users.map((x) =>
+            x.id === currentUser.id ? { ...x, votedFor: { ...x.votedFor, [position]: candidateId } } : x
+          ),
+          candidates: s.candidates.map((c) => (c.id === candidateId ? { ...c, votes: c.votes + 1 } : c)),
+        };
+      });
+      if (!applied) return { ok: false, error: "You have already voted for this position." };
       return { ok: true };
     },
     addCandidate: (c) => {

@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useApp } from "@/context/AppContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,8 @@ function VotePage() {
   const { currentUser, candidates, electionStatus, castVote } = useApp();
   const positions = useMemo(() => Array.from(new Set(candidates.map((c) => c.position))), [candidates]);
   const [pending, setPending] = useState<{ position: string; candidateId: string; name: string } | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const submitLock = useRef(false);
 
   if (!currentUser) {
     return (
@@ -48,10 +50,22 @@ function VotePage() {
 
   const confirm = () => {
     if (!pending) return;
+    // Hard guard against double-submits from rapid clicks / double-tap
+    if (submitLock.current) return;
+    if (currentUser?.votedFor[pending.position]) {
+      toast.error("You have already voted for this position.");
+      setPending(null);
+      return;
+    }
+    submitLock.current = true;
+    setSubmitting(true);
     const res = castVote(pending.position, pending.candidateId);
     if (res.ok) toast.success(`Vote recorded for ${pending.name}`);
     else toast.error(res.error || "Could not record vote");
     setPending(null);
+    setSubmitting(false);
+    // Release after a tick to swallow any duplicate click
+    setTimeout(() => { submitLock.current = false; }, 400);
   };
 
   return (
@@ -93,7 +107,7 @@ function VotePage() {
                         <p className="line-clamp-2 text-sm text-foreground/80">{c.manifesto}</p>
                         <Button
                           className="mt-4 w-full"
-                          disabled={!!voted}
+                          disabled={!!voted || submitting}
                           variant={isChoice ? "secondary" : "default"}
                           onClick={() => setPending({ position, candidateId: c.id, name: c.name })}
                         >
@@ -118,8 +132,10 @@ function VotePage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirm}>Confirm Vote</AlertDialogAction>
+            <AlertDialogCancel disabled={submitting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirm} disabled={submitting}>
+              {submitting ? "Submitting…" : "Confirm Vote"}
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
